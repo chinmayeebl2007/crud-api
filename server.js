@@ -1,6 +1,7 @@
 const express = require("express");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./openapi.json");
+const Database = require("better-sqlite3");
 
 const app = express();
 const PORT = 3000;
@@ -11,14 +12,38 @@ app.use(express.json());
 // Swagger UI
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-// In-memory task list
-let tasks = [
-    { id: 1, title: "Learn Express", done: false },
-    { id: 2, title: "Build CRUD API", done: false },
-    { id: 3, title: "Complete Assignment", done: true }
-];
+/* ==========================
+   SQLite Database
+========================== */
 
-// Home Route
+const db = new Database("tasks.db");
+
+// Create table if it doesn't exist
+db.prepare(`
+CREATE TABLE IF NOT EXISTS tasks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    done INTEGER NOT NULL DEFAULT 0
+)
+`).run();
+
+// Seed database only once
+const count = db.prepare("SELECT COUNT(*) AS count FROM tasks").get();
+
+if (count.count === 0) {
+    const insert = db.prepare(
+        "INSERT INTO tasks (title, done) VALUES (?, ?)"
+    );
+
+    insert.run("Learn Express", 0);
+    insert.run("Build CRUD API", 0);
+    insert.run("Complete Assignment", 1);
+}
+
+/* ==========================
+   Home Route
+========================== */
+
 app.get("/", (req, res) => {
     res.json({
         name: "Task API",
@@ -30,7 +55,11 @@ app.get("/", (req, res) => {
         ]
     });
 });
-// Health Check
+
+/* ==========================
+   Health Check
+========================== */
+
 app.get("/health", (req, res) => {
     res.json({
         status: "OK",
@@ -38,12 +67,31 @@ app.get("/health", (req, res) => {
     });
 });
 
-// Get all tasks
+/* ==========================
+   GET ALL TASKS
+========================== */
+
 app.get("/tasks", (req, res) => {
+
+    const rows = db.prepare(`
+        SELECT id, title, done
+        FROM tasks
+    `).all();
+
+    const tasks = rows.map(task => ({
+        id: task.id,
+        title: task.title,
+        done: Boolean(task.done)
+    }));
+
     res.status(200).json(tasks);
+
 });
 
-// Get task by ID
+/* ==========================
+   GET TASK BY ID
+========================== */
+
 app.get("/tasks/:id", (req, res) => {
 
     const id = Number(req.params.id);
@@ -54,7 +102,11 @@ app.get("/tasks/:id", (req, res) => {
         });
     }
 
-    const task = tasks.find(task => task.id === id);
+    const task = db.prepare(`
+        SELECT id, title, done
+        FROM tasks
+        WHERE id = ?
+    `).get(id);
 
     if (!task) {
         return res.status(404).json({
@@ -62,10 +114,16 @@ app.get("/tasks/:id", (req, res) => {
         });
     }
 
+    task.done = Boolean(task.done);
+
     res.status(200).json(task);
+
 });
 
-// Create task
+/* ==========================
+   CREATE TASK
+========================== */
+
 app.post("/tasks", (req, res) => {
 
     const { title, done } = req.body;
@@ -76,18 +134,30 @@ app.post("/tasks", (req, res) => {
         });
     }
 
-    const newTask = {
-        id: tasks.length ? tasks[tasks.length - 1].id + 1 : 1,
-        title: title.trim(),
-        done: done ?? false
-    };
+    const result = db.prepare(`
+        INSERT INTO tasks (title, done)
+        VALUES (?, ?)
+    `).run(
+        title.trim(),
+        done ? 1 : 0
+    );
 
-    tasks.push(newTask);
+    const newTask = db.prepare(`
+        SELECT id, title, done
+        FROM tasks
+        WHERE id = ?
+    `).get(result.lastInsertRowid);
+
+    newTask.done = Boolean(newTask.done);
 
     res.status(201).json(newTask);
+
 });
 
-// Update task
+/* ==========================
+   UPDATE TASK
+========================== */
+
 app.put("/tasks/:id", (req, res) => {
 
     const id = Number(req.params.id);
@@ -95,14 +165,6 @@ app.put("/tasks/:id", (req, res) => {
     if (isNaN(id)) {
         return res.status(400).json({
             error: "Invalid task ID"
-        });
-    }
-
-    const task = tasks.find(task => task.id === id);
-
-    if (!task) {
-        return res.status(404).json({
-            error: "Task not found"
         });
     }
 
@@ -114,13 +176,44 @@ app.put("/tasks/:id", (req, res) => {
         });
     }
 
-    task.title = title.trim();
-    task.done = done ?? task.done;
+    const existingTask = db.prepare(`
+        SELECT id
+        FROM tasks
+        WHERE id = ?
+    `).get(id);
 
-    res.status(200).json(task);
+    if (!existingTask) {
+        return res.status(404).json({
+            error: "Task not found"
+        });
+    }
+
+    db.prepare(`
+        UPDATE tasks
+        SET title = ?, done = ?
+        WHERE id = ?
+    `).run(
+        title.trim(),
+        done ? 1 : 0,
+        id
+    );
+
+    const updatedTask = db.prepare(`
+        SELECT id, title, done
+        FROM tasks
+        WHERE id = ?
+    `).get(id);
+
+    updatedTask.done = Boolean(updatedTask.done);
+
+    res.status(200).json(updatedTask);
+
 });
 
-// Delete task
+/* ==========================
+   DELETE TASK
+========================== */
+
 app.delete("/tasks/:id", (req, res) => {
 
     const id = Number(req.params.id);
@@ -131,20 +224,25 @@ app.delete("/tasks/:id", (req, res) => {
         });
     }
 
-    const index = tasks.findIndex(task => task.id === id);
+    const result = db.prepare(`
+        DELETE FROM tasks
+        WHERE id = ?
+    `).run(id);
 
-    if (index === -1) {
+    if (result.changes === 0) {
         return res.status(404).json({
             error: "Task not found"
         });
     }
 
-    tasks.splice(index, 1);
-
     res.status(204).send();
+
 });
 
-// Start server
+/* ==========================
+   Start Server
+========================== */
+
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });

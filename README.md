@@ -1,18 +1,23 @@
-# Task API
+# Task API with SQLite
 
-A simple RESTful CRUD API built using **Node.js** and **Express.js**. This project demonstrates the basic Create, Read, Update, and Delete (CRUD) operations using an in-memory array. The API also includes interactive documentation using **Swagger UI**.
+## Project Overview
+
+This project is a RESTful Task Management API built using Node.js, Express.js, and SQLite. It allows users to create, read, update, and delete tasks while storing all data permanently in a SQLite database.
+
+This project demonstrates replacing in-memory storage with a persistent SQLite database using better-sqlite3.
 
 ---
 
 ## Features
 
-- Create a new task
+- Create tasks
 - View all tasks
 - View a task by ID
-- Update an existing task
-- Delete a task
-- Health check endpoint
-- Interactive Swagger UI documentation
+- Update tasks
+- Delete tasks
+- SQLite database integration
+- Swagger API documentation
+- Persistent data storage
 
 ---
 
@@ -20,8 +25,9 @@ A simple RESTful CRUD API built using **Node.js** and **Express.js**. This proje
 
 - Node.js
 - Express.js
-- Swagger UI Express
-- OpenAPI 3.0 (openapi.json)
+- SQLite
+- better-sqlite3
+- Swagger UI
 
 ---
 
@@ -30,13 +36,7 @@ A simple RESTful CRUD API built using **Node.js** and **Express.js**. This proje
 Clone the repository:
 
 ```bash
-git clone https://github.com/chinmayeebl2007/crud-api.git
-```
-
-Go to the project folder:
-
-```bash
-cd crud-api
+git clone <repository-url>
 ```
 
 Install dependencies:
@@ -49,103 +49,106 @@ npm install
 
 ## Run the Project
 
-Start the server using:
-
 ```bash
 node server.js
 ```
 
-The server runs at:
+Server:
 
 ```
 http://localhost:3000
 ```
 
----
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | / | API information |
-| GET | /health | Health check |
-| GET | /tasks | Get all tasks |
-| GET | /tasks/:id | Get task by ID |
-| POST | /tasks | Create a new task |
-| PUT | /tasks/:id | Update a task |
-| DELETE | /tasks/:id | Delete a task |
-
----
-
-## Example Task Object
-
-```json
-{
-  "id": 1,
-  "title": "Learn Express",
-  "done": false
-}
-```
-
----
-
-## Example curl Command
-
-```bash
-curl -i -X POST http://localhost:3000/tasks ^
--H "Content-Type: application/json" ^
--d "{\"title\":\"Buy milk\"}"
-```
-
-### Example Response
-
-```http
-HTTP/1.1 201 Created
-Content-Type: application/json; charset=utf-8
-
-{
-  "id": 4,
-  "title": "Buy milk",
-  "done": false
-}
-```
-
----
-
-## Swagger Documentation
-
-Open the following URL in your browser:
+Swagger Documentation:
 
 ```
 http://localhost:3000/docs
 ```
 
-### Swagger UI
+---
 
-> Replace the filename below if you want to use a different screenshot.
+## Database
 
-```md
-![Swagger UI](screenshots/Screenshot%20(1048).png)
+Database file:
+
+```
+tasks.db
 ```
 
-After saving the README, remove the surrounding triple backticks from the image line so it becomes:
+Table:
 
-![Swagger UI](screenshots/Screenshot%20(1048).png)
+```
+tasks
+```
+
+Columns:
+
+| Column | Type |
+|---------|------|
+| id | INTEGER |
+| title | TEXT |
+| done | INTEGER |
 
 ---
 
-## Status Codes
+## API Endpoints
 
-| Status Code | Meaning |
-|-------------|---------|
-| 200 | OK |
-| 201 | Created |
-| 204 | No Content |
-| 400 | Bad Request |
-| 404 | Not Found |
+### GET /tasks
+
+Returns all tasks.
+
+### GET /tasks/:id
+
+Returns a task by ID.
+
+### POST /tasks
+
+Creates a new task.
+
+Example:
+
+```json
+{
+  "title": "Learn SQLite",
+  "done": false
+}
+```
+
+---
+
+### PUT /tasks/:id
+
+Updates an existing task.
+
+---
+
+### DELETE /tasks/:id
+
+Deletes a task.
+
+---
+
+## Testing
+
+The API was tested using:
+
+- Postman
+- Swagger UI
+- DB Browser for SQLite
+
+---
+
+## Future Improvements
+
+- Authentication
+- User accounts
+- Search functionality
+- Pagination
+- Due dates
+- Task categories
 
 ---
 
 ## Author
 
-**Chinmayee B L**
+Chinmayee B L
