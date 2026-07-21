@@ -1,6 +1,6 @@
 # Task API
 
-A simple RESTful CRUD API built using **Node.js** and **Express.js**. This project demonstrates the basic Create, Read, Update, and Delete (CRUD) operations using an in-memory array.
+A simple RESTful CRUD API built using **Node.js** and **Express.js**. This project demonstrates the basic Create, Read, Update, and Delete (CRUD) operations using an in-memory array. The API also includes interactive documentation using **Swagger UI**.
 
 ---
 
@@ -12,7 +12,7 @@ A simple RESTful CRUD API built using **Node.js** and **Express.js**. This proje
 - Update an existing task
 - Delete a task
 - Health check endpoint
-- Swagger API documentation
+- Interactive Swagger UI documentation
 
 ---
 
@@ -21,7 +21,7 @@ A simple RESTful CRUD API built using **Node.js** and **Express.js**. This proje
 - Node.js
 - Express.js
 - Swagger UI Express
-- Swagger JSDoc
+- OpenAPI 3.0 (openapi.json)
 
 ---
 
@@ -30,7 +30,7 @@ A simple RESTful CRUD API built using **Node.js** and **Express.js**. This proje
 Clone the repository:
 
 ```bash
-git clone <your-github-repository-url>
+git clone https://github.com/chinmayeebl2007/crud-api.git
 ```
 
 Go to the project folder:
@@ -45,13 +45,17 @@ Install dependencies:
 npm install
 ```
 
-Start the server:
+---
+
+## Run the Project
+
+Start the server using:
 
 ```bash
 node server.js
 ```
 
-The server runs on:
+The server runs at:
 
 ```
 http://localhost:3000
@@ -62,12 +66,12 @@ http://localhost:3000
 ## API Endpoints
 
 | Method | Endpoint | Description |
-|---------|----------|-------------|
-| GET | / | Welcome message |
+|--------|----------|-------------|
+| GET | / | API information |
 | GET | /health | Health check |
 | GET | /tasks | Get all tasks |
 | GET | /tasks/:id | Get task by ID |
-| POST | /tasks | Create a task |
+| POST | /tasks | Create a new task |
 | PUT | /tasks/:id | Update a task |
 | DELETE | /tasks/:id | Delete a task |
 
@@ -77,9 +81,32 @@ http://localhost:3000
 
 ```json
 {
-    "id": 1,
-    "title": "Learn Express",
-    "done": false
+  "id": 1,
+  "title": "Learn Express",
+  "done": false
+}
+```
+
+---
+
+## Example curl Command
+
+```bash
+curl -i -X POST http://localhost:3000/tasks ^
+-H "Content-Type: application/json" ^
+-d "{\"title\":\"Buy milk\"}"
+```
+
+### Example Response
+
+```http
+HTTP/1.1 201 Created
+Content-Type: application/json; charset=utf-8
+
+{
+  "id": 4,
+  "title": "Buy milk",
+  "done": false
 }
 ```
 
@@ -87,21 +114,35 @@ http://localhost:3000
 
 ## Swagger Documentation
 
-Open:
+Open the following URL in your browser:
 
 ```
 http://localhost:3000/docs
 ```
 
+### Swagger UI
+
+> Replace the filename below if you want to use a different screenshot.
+
+```md
+![Swagger UI](screenshots/Screenshot%20(1048).png)
+```
+
+After saving the README, remove the surrounding triple backticks from the image line so it becomes:
+
+![Swagger UI](screenshots/Screenshot%20(1048).png)
+
 ---
 
 ## Status Codes
 
-- 200 OK
-- 201 Created
-- 204 No Content
-- 400 Bad Request
-- 404 Not Found
+| Status Code | Meaning |
+|-------------|---------|
+| 200 | OK |
+| 201 | Created |
+| 204 | No Content |
+| 400 | Bad Request |
+| 404 | Not Found |
 
 ---
 
