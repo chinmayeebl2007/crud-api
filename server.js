@@ -21,10 +21,15 @@ let tasks = [
 // Home Route
 app.get("/", (req, res) => {
     res.json({
-        message: "Welcome to the Task API!"
+        name: "Task API",
+        version: "1.0",
+        endpoints: [
+            "/tasks",
+            "/health",
+            "/docs"
+        ]
     });
 });
-
 // Health Check
 app.get("/health", (req, res) => {
     res.json({
